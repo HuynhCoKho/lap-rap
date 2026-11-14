@@ -1,4 +1,13 @@
 export const UNITS={mm:1,cm:10,m:1000,in:25.4};
+export function photoRatios(marks,reference,model){
+ const required=['cylinder','cone'].includes(model)?['w','h']:['w','d','h'];
+ if(!required.includes(reference))throw Error('Hình trụ/nón dùng A (đường kính) hoặc C (chiều cao) làm cạnh chuẩn.');
+ const labels={w:'A',d:'B',h:'C'},lengths={};
+ for(const k of required){const p=marks[k];if(!p||p.length!==2||!p.flat().every(Number.isFinite))continue;const n=Math.hypot(p[1][0]-p[0][0],p[1][1]-p[0][1]);if(n>=3)lengths[k]=n;}
+ const missing=required.filter(k=>!lengths[k]);
+ if(missing.length)throw Error('Chưa áp dụng: còn thiếu cạnh '+missing.map(k=>labels[k]).join(', ')+'. Chọn hai đầu mỗi cạnh (ít nhất 3 pixel); không dùng tỷ lệ mẫu để thay cạnh thiếu.');
+ const result={};for(const k of required){const r=lengths[k]/lengths[reference]*100;if(r>1000)throw Error('Tỷ lệ vượt 1000%. Kiểm tra lại hai đầu cạnh chuẩn.');result[k]=r;}return result;
+}
 export function dimensions(base,reference,ratios){
  if(!Number.isFinite(base)||base<=0)throw Error('Cạnh chuẩn phải lớn hơn 0.');
  const result={};for(const k of ['w','d','h']){const r=k===reference?100:ratios[k];if(!Number.isFinite(r)||r<=0||r>1000)throw Error('Tỷ lệ phải lớn hơn 0 và không quá 1000%.');result[k]=base*r/100;}return result;

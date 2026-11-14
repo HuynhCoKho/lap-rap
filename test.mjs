@@ -1,7 +1,11 @@
-import test from 'node:test';import assert from 'node:assert/strict';import {dimensions,geometry,UNITS} from './geometry.js';
+import test from 'node:test';import assert from 'node:assert/strict';import {dimensions,geometry,UNITS,photoRatios} from './geometry.js';
 test('Reference edge scales every dimension consistently',()=>{assert.deepEqual(dimensions(10,'w',{w:100,d:75,h:25}),{w:10,d:7.5,h:2.5});assert.deepEqual(dimensions(2.5,'h',{w:400,d:300,h:100}),{w:10,d:7.5,h:2.5});assert.throws(()=>dimensions(0,'w',{}));assert.throws(()=>dimensions(10,'w',{d:NaN,h:25}));});
 test('Unit conversion preserves physical length',()=>{assert.equal(10*UNITS.cm,100*UNITS.mm);assert.equal(1*UNITS.in,25.4);});
 test('Box net has 6 main faces and correct crease lengths',()=>{const g=geometry('box',100,75,25,35);assert.equal(g.faces.filter(f=>!f.glue).length,6);const folds=g.edges.filter(e=>e.count===2);assert.ok(folds.length>=7);assert.ok(folds.some(e=>Math.hypot(e.a[0]-e.b[0],e.a[1]-e.b[1])===100));assert.ok(g.edges.every(e=>e.count<=2));});
 test('Cylinder development circumference and bases match',()=>{const g=geometry('cylinder',100,50,25,35);assert.equal(g.faces[0].p[1][0],Math.PI*100);assert.equal(g.circles.length,2);assert.equal(g.circles[0].r,50);});
 test('Cone sector arc matches base circumference',()=>{const g=geometry('cone',100,50,120,35),p=g.faces[0].p,l=Math.hypot(50,120);let arc=0;for(let i=2;i<p.length;i++)arc+=Math.hypot(p[i][0]-p[i-1][0],p[i][1]-p[i-1][1]);assert.ok(Math.abs(arc-100*Math.PI)<.01);assert.equal(g.circles[0].r,50);assert.equal(Math.hypot(...p[1]),l);});
 test('All templates produce finite printable bounds',()=>{for(const model of ['mailer','box','cylinder','cone'])for(const s of [[100,75,25],[10,10,100],[1000,1,1]]){const g=geometry(model,...s,35);assert.ok(Object.values(g.bounds).every(Number.isFinite));assert.ok(g.bounds.w>0&&g.bounds.h>0);}});
+
+test('Photo ratios reject a single marked edge instead of retaining sample ratios',()=>{assert.throws(()=>photoRatios({w:[[0,0],[100,0]],d:[],h:[]},'w','box'),/B, C/);});
+test('Complete photo measurements scale all three dimensions',()=>{assert.deepEqual(photoRatios({w:[[0,0],[200,0]],d:[[0,0],[0,80]],h:[[0,0],[0,20]]},'w','box'),{w:100,d:40,h:10});});
+test('Photo measurement rejects tiny edges and unsupported cylinder reference',()=>{assert.throws(()=>photoRatios({w:[[0,0],[1,0]],h:[[0,0],[30,0]]},'w','cylinder'),/A/);assert.throws(()=>photoRatios({},'d','cone'),/đường kính/);});
