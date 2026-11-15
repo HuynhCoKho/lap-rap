@@ -29,16 +29,26 @@ export function geometry(model,w,d,h,tab){
   rect('Tai trên',w,-d/2,d,d/2,true);rect('Tai trên',2*w+d,-d/2,d,d/2,true);
   rect('Tai dưới',w,h,d,d/2,true);rect('Tai dưới',2*w+d,h,d,d/2,true);
   rect('Mép nắp',0,-d-t,w,t,true);rect('Mép đáy',0,h+d,w,t,true);
+ }else if(model==='dustpan'){
+  // Open tray approximation: A = opening width, B = bottom depth, C = rear wall height.
+  rect('Đáy khay',0,0,w,d);rect('Vách sau',0,-h,w,h);
+  poly('Vách trái',[[0,0],[0,d],[-h,0]]);
+  poly('Vách phải',[[w,0],[w+h,0],[w,d]]);
+  rect('Mép xúc',0,d,w,t);
+  // Rear corner joins are separate strips: avoid overlapping adjacent faces in the net.
+  rect('Dải nối góc 1',-h,-h-3*t,2*t,h,true);
+  rect('Dải nối góc 2',w+h-2*t,-h-3*t,2*t,h,true);
  }else if(model==='cylinder'){
   const c=Math.PI*w;rect('Thân trụ',0,0,c,h);sideTab('Tai dán',0,0,t,h);
   circles.push({name:'Đáy 1',cx:w/2,cy:h+w*.65+t,r:w/2},{name:'Đáy 2',cx:w*1.7,cy:h+w*.65+t,r:w/2});
- }else{
+ }else if(model==='cone'){
   const r=w/2,l=Math.hypot(r,h),angle=2*Math.PI*r/l,n=180;
   const points=[[0,0]];for(let i=0;i<=n;i++){const a=-Math.PI/2+angle*i/n;points.push([l*Math.cos(a),l*Math.sin(a)]);}poly('Thân nón',points);
   circles.push({name:'Đáy',cx:l+w,cy:0,r});
- }
+ }else throw Error('Kiểu bản trải chưa được hỗ trợ.');
  const edgeMap=new Map();const key=p=>p.map(n=>n.toFixed(6)).join(',');
  for(const f of faces){for(let i=0;i<f.p.length;i++){const a=f.p[i],b=f.p[(i+1)%f.p.length],k=[key(a),key(b)].sort().join('|');if(edgeMap.has(k))edgeMap.get(k).count++;else edgeMap.set(k,{a,b,count:1});}}
+ if(model==='dustpan'){for(const x of [-h+t,w+h-t])edgeMap.set('strip-fold-'+x,{a:[x,-h-3*t],b:[x,-3*t],count:2});}
  const pts=faces.flatMap(f=>f.p).concat(circles.flatMap(c=>[[c.cx-c.r,c.cy-c.r],[c.cx+c.r,c.cy+c.r]]));
  const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);return {faces,circles,edges:[...edgeMap.values()],bounds:{x:Math.min(...xs),y:Math.min(...ys),w:Math.max(...xs)-Math.min(...xs),h:Math.max(...ys)-Math.min(...ys)}};
 }

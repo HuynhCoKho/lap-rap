@@ -7,3 +7,5 @@ header{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:1
 /* CK Station lettering: emerald face, fine rim and sculpted depth. */
 .page-title{color:#008263;-webkit-text-stroke:.45px #00664d;text-shadow:0 -1px 0 #64b79e,1px 1px 0 #006e53,2px 2px 0 #00634b,3px 3px 0 #005a43,4px 4px 0 #00513c,5px 5px 0 #004832,6px 8px 9px rgba(0,69,48,.24);padding-bottom:6px}
 @media(max-width:700px){.page-title{-webkit-text-stroke:.2px #00664d;text-shadow:0 -1px 0 #64b79e,1px 1px 0 #006e53,2px 2px 0 #005a43,3px 3px 0 #004832,4px 5px 6px rgba(0,69,48,.22);padding-bottom:4px}}
+
+.ai-panel{background:#eff7f1;border:1px solid #c6dfce;border-radius:12px;padding:14px;margin-top:14px}.ai-panel>button{width:100%;margin-top:10px}.ai-panel #aiStatus{font-size:11px;line-height:1.8;overflow-wrap:anywhere}.ai-panel progress{width:100%;accent-color:#25704e}.ai-panel .eyebrow{font-size:9px;letter-spacing:1.5px}.crop-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}.crop-tools button{font-size:10px}.crop-tools span{flex-basis:100%}button:disabled{opacity:.45;cursor:not-allowed}.ai-panel select{font-size:11px}#aiDetails{white-space:pre-line}

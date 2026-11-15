@@ -1,3 +1,4 @@
+import {CANDIDATES,rankRecognition,normalizedCrop} from './recognition.js';
 import test from 'node:test';import assert from 'node:assert/strict';import {dimensions,geometry,UNITS,photoRatios} from './geometry.js';
 test('Reference edge scales every dimension consistently',()=>{assert.deepEqual(dimensions(10,'w',{w:100,d:75,h:25}),{w:10,d:7.5,h:2.5});assert.deepEqual(dimensions(2.5,'h',{w:400,d:300,h:100}),{w:10,d:7.5,h:2.5});assert.throws(()=>dimensions(0,'w',{}));assert.throws(()=>dimensions(10,'w',{d:NaN,h:25}));});
 test('Unit conversion preserves physical length',()=>{assert.equal(10*UNITS.cm,100*UNITS.mm);assert.equal(1*UNITS.in,25.4);});
@@ -9,3 +10,8 @@ test('All templates produce finite printable bounds',()=>{for(const model of ['m
 test('Photo ratios reject a single marked edge instead of retaining sample ratios',()=>{assert.throws(()=>photoRatios({w:[[0,0],[100,0]],d:[],h:[]},'w','box'),/B, C/);});
 test('Complete photo measurements scale all three dimensions',()=>{assert.deepEqual(photoRatios({w:[[0,0],[200,0]],d:[[0,0],[0,80]],h:[[0,0],[0,20]]},'w','box'),{w:100,d:40,h:10});});
 test('Photo measurement rejects tiny edges and unsupported cylinder reference',()=>{assert.throws(()=>photoRatios({w:[[0,0],[1,0]],h:[[0,0],[30,0]]},'w','cylinder'),/A/);assert.throws(()=>photoRatios({},'d','cone'),/đường kính/);});
+
+test('AI ranks candidates and flags ambiguous scores',()=>{const out=[{label:CANDIDATES[2].prompt,score:.6},{label:CANDIDATES[0].prompt,score:.2}];const r=rankRecognition(out);assert.equal(r.ranked[0].model,'cylinder');assert.equal(r.uncertain,false);assert.equal(rankRecognition([{label:CANDIDATES[0].prompt,score:.32},{label:CANDIDATES[2].prompt,score:.3}]).uncertain,true);assert.throws(()=>rankRecognition([{label:'bad',score:1}]));});
+test('Unsupported curved objects do not silently become boxes',()=>{assert.equal(rankRecognition([{label:CANDIDATES[5].prompt,score:.95}]).ranked[0].model,null);});
+test('Crop normalizes reversed corners and rejects empty or out-of-bounds regions',()=>{assert.deepEqual(normalizedCrop([.8,.9],[.2,.1]),{x:.2,y:.1,w:.8-.2,h:.9-.1});assert.throws(()=>normalizedCrop([.1,.1],[.11,.5]));assert.throws(()=>normalizedCrop([-1,0],[.5,.5]));});
+test('Dustpan unfolds into matching bottom, rear and triangular sides',()=>{const g=geometry('dustpan',200,300,100,35);assert.equal(g.faces.filter(f=>!f.glue).length,5);assert.equal(g.faces.filter(f=>f.p.length===3).length,2);const foldLengths=g.edges.filter(e=>e.count===2).map(e=>Math.hypot(e.a[0]-e.b[0],e.a[1]-e.b[1]));assert.equal(foldLengths.filter(l=>l===300).length,2);assert.equal(foldLengths.filter(l=>l===200).length,2);assert.ok(Object.values(g.bounds).every(Number.isFinite));assert.throws(()=>geometry('unknown',1,1,1,35));});
