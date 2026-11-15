@@ -46,3 +46,10 @@ Có thêm lăng trụ tam giác cân (A: đáy tam giác; B: cao tam giác; C: d
 ### Đa giác đều 3–12 cạnh
 
 Lăng trụ và chóp có đáy đa giác đều 3–12 cạnh. Chọn số cạnh ở ô Số cạnh đáy; A là một cạnh đa giác (không phải đường kính), C là chiều cao vuông góc, B không dùng. AI có nhóm gợi ý ngũ giác/lục giác/bát giác và chóp đáy vuông; các số cạnh còn lại có thể chọn thủ công. Chưa hỗ trợ tự suy đa giác không đều hoặc mặt cong bất kỳ. Không xem việc thêm nhóm phân loại là bảo đảm độ chính xác: cần ảnh gốc/khoanh vùng và xác nhận kết quả.
+
+
+### Dải nối và hướng dẫn 3D
+
+Dải nối rời được xếp ngang trong khu riêng, ghi mã và kích thước dài × rộng. Với chóp, hai cạnh cùng mã N ghép bằng dải N tương ứng. Gấp đôi theo chiều dài, mỗi nửa rộng bằng một nửa chiều rộng dải. Thước kiểm tra 10 mm nằm trong khu tách riêng, không phải chi tiết để cắt.
+
+Hướng dẫn 3D dùng cùng kích thước và số cạnh với bản 2D. Bước 0 là bản trải, các bước sau thêm mặt ở vị trí lắp và tô vàng mặt mới; bước cuối hướng dẫn dán. Kéo chuột/chạm hoặc phím mũi tên để xoay, cuộn/phím nút ± để thu phóng; có góc trước, bên, trên, nghiêng và chế độ tự chuyển bước. Đây là mô phỏng ghép từng mặt, không phải hoạt cảnh gấp liên tục hay mô phỏng vật liệu. Tai dán, độ dày, biến dạng và cán hót rác chưa dựng trong 3D. Thân trụ/nón chia mảng chỉ để hiển thị mặt cong, không phải đường cắt.

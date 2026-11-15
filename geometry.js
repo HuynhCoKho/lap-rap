@@ -80,10 +80,28 @@ export function geometry(model,w,d,h,tab,sides=6){
   const points=[[0,0]];for(let i=0;i<=n;i++){const a=-Math.PI/2+angle*i/n;points.push([l*Math.cos(a),l*Math.sin(a)]);}poly('Thân nón',points);
   circles.push({name:'Đáy',cx:l+w,cy:0,r});
  }else throw Error('Kiểu bản trải chưa được hỗ trợ.');
+ // Pack loose joining strips separately, keeping their physical dimensions unchanged.
+ const strips=faces.filter(f=>f.glue&&f.name.startsWith('Dải nối'));
+ if(strips.length){
+  const main=faces.filter(f=>!strips.includes(f)).flatMap(f=>f.p),left=Math.min(...main.map(p=>p[0])),right=Math.max(...main.map(p=>p[0])),bottom=Math.max(...main.map(p=>p[1]));
+  let x=left,y=bottom+14,rowHeight=0;
+  for(const [i,f] of strips.entries()){
+   const length=f.p[2][1]-f.p[0][1],width=f.p[1][0]-f.p[0][0];
+   if(x>left&&x+length>right){x=left;y+=rowHeight+10;rowHeight=0;}
+   f.p=[[x,y],[x+length,y],[x+length,y+width],[x,y+width]];f.detached=true;f.join='N'+(i+1);f.length=length;f.width=width;
+   x+=length+12;rowHeight=Math.max(rowHeight,width);
+  }
+ }
  const edgeMap=new Map();const key=p=>p.map(n=>n.toFixed(6)).join(',');
- for(const f of faces){for(let i=0;i<f.p.length;i++){const a=f.p[i],b=f.p[(i+1)%f.p.length],k=[key(a),key(b)].sort().join('|');if(edgeMap.has(k))edgeMap.get(k).count++;else edgeMap.set(k,{a,b,count:1});}}
- if(model==='dustpan'){for(const x of [-h+t,w+h-t])edgeMap.set('strip-fold-'+x,{a:[x,-h-3*t],b:[x,-3*t],count:2});}
- if(['triangular-prism','triangular-pyramid','polygon-prism','polygon-pyramid'].includes(model))for(const f of faces.filter(f=>f.glue&&f.name.startsWith('Dải nối'))){const x=(f.p[0][0]+f.p[1][0])/2;edgeMap.set(f.name,{a:[x,f.p[0][1]],b:[x,f.p[2][1]],count:2});}
+ for(const f of faces){for(let i=0;i<f.p.length;i++){const a=f.p[i],b=f.p[(i+1)%f.p.length],k=[key(a),key(b)].sort().join('|');if(edgeMap.has(k))edgeMap.get(k).count++;else edgeMap.set(k,{a,b,count:1,auxiliary:!!f.detached});}}
+ for(const f of strips){const y=(f.p[0][1]+f.p[2][1])/2;edgeMap.set(f.name,{a:[f.p[0][0],y],b:[f.p[1][0],y],count:2,auxiliary:true});}
+ if(['triangular-pyramid','polygon-pyramid'].includes(model)){
+  const sides=faces.filter(f=>!f.glue).slice(1);
+  for(let i=0;i<sides.length;i++){
+   const face=sides[i],next=sides[(i+1)%sides.length];
+   for(const [a,b] of [[face.p[1],face.p[2]],[next.p[0],next.p[2]]]){const e=edgeMap.get([key(a),key(b)].sort().join('|'));if(e)e.join='N'+(i+1);}
+  }
+ }
  const pts=faces.flatMap(f=>f.p).concat(circles.flatMap(c=>[[c.cx-c.r,c.cy-c.r],[c.cx+c.r,c.cy+c.r]]));
  const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);return {faces,circles,edges:[...edgeMap.values()],bounds:{x:Math.min(...xs),y:Math.min(...ys),w:Math.max(...xs)-Math.min(...xs),h:Math.max(...ys)-Math.min(...ys)}};
 }
