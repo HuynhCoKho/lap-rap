@@ -5,8 +5,8 @@ export function buildAssembly(model,w,d,h,sides=6,tab=35){
  const baseRect=[[-w/2,-d/2,0],[w/2,-d/2,0],[w/2,d/2,0],[-w/2,d/2,0]];
  const regular=n=>{const R=w/(2*Math.sin(Math.PI/n));return Array.from({length:n},(_,i)=>{const a=-Math.PI/2-Math.PI/n+2*Math.PI*i/n;return [R*Math.cos(a),R*Math.sin(a),0];});};
  let note='Hướng dẫn ghép các mặt chính; tai dán và độ dày vật liệu không được mô phỏng trong 3D.';
- if(['triangular-pyramid','polygon-pyramid','triangular-prism','polygon-prism'].includes(model)){
-  const pyramid=model.includes('pyramid'),n=model.startsWith('triangular')?3:sides;
+ if(['triangular-pyramid','polygon-pyramid','triangular-prism','polygon-prism','hex-carton'].includes(model)){
+  const pyramid=model.includes('pyramid'),n=model==='hex-carton'?6:model.startsWith('triangular')?3:sides;
   if(!Number.isInteger(n)||n<3||n>12)throw Error('Số cạnh đáy không hợp lệ.');
   const p=model==='triangular-prism'?[[-w/2,-d/3,0],[w/2,-d/3,0],[0,2*d/3,0]]:regular(n);
   steps.push('Đặt đáy '+n+' cạnh nằm trên mặt phẳng.');add('Đáy',p,1);
@@ -17,6 +17,7 @@ export function buildAssembly(model,w,d,h,sides=6,tab=35){
   }
   if(!pyramid){const phase=n+2;add('Đáy trên',p.map(([x,y])=>[x,y,h]),phase);steps.push('Đóng đáy thứ hai. Hai đáy song song, các góc và cạnh tương ứng trùng nhau.');}
   steps.push(pyramid?'Ghép hai cạnh cùng mã N. Gấp đôi dải nối N rồi dán một nửa vào mỗi mặt, ở phía trong. Đợi keo khô.':'Dán tai nối thân và các dải nối đáy từ bên trong. Kiểm tra hai đáy song song trước khi cố định.');
+  if(model==='hex-carton'){steps[steps.length-1]='Dán tai nối thân; gấp các tai phụ vào trong, đóng nắp/đáy lục giác và luồn tai gài vào mặt đối diện. Thử bằng giấy trước khi cắt bìa.';note='Khuôn hộp lục giác có nắp, đáy, tai phụ và tai gài liền thân. 3D chỉ hiển thị các mặt chính, không mô phỏng tai hay độ dày vật liệu.';}
   if(pyramid)note='Mã N trên cạnh 3D tương ứng với mã trên bản cắt 2D và dải nối rời. Cao C là chiều cao vuông góc, không phải cạnh xiên.';
  }else if(['box','mailer','dustpan'].includes(model)){
   add('Đáy',baseRect,1);steps.push('Đặt mặt đáy trên bàn, mặt ngoài hướng xuống.');

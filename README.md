@@ -53,3 +53,10 @@ Lăng trụ và chóp có đáy đa giác đều 3–12 cạnh. Chọn số cạ
 Dải nối rời được xếp ngang trong khu riêng, ghi mã và kích thước dài × rộng. Với chóp, hai cạnh cùng mã N ghép bằng dải N tương ứng. Gấp đôi theo chiều dài, mỗi nửa rộng bằng một nửa chiều rộng dải. Thước kiểm tra 10 mm nằm trong khu tách riêng, không phải chi tiết để cắt.
 
 Hướng dẫn 3D dùng cùng kích thước và số cạnh với bản 2D. Bước 0 là bản trải, các bước sau thêm mặt ở vị trí lắp và tô vàng mặt mới; bước cuối hướng dẫn dán. Kéo chuột/chạm hoặc phím mũi tên để xoay, cuộn/phím nút ± để thu phóng; có góc trước, bên, trên, nghiêng và chế độ tự chuyển bước. Đây là mô phỏng ghép từng mặt, không phải hoạt cảnh gấp liên tục hay mô phỏng vật liệu. Tai dán, độ dày, biến dạng và cán hót rác chưa dựng trong 3D. Thân trụ/nón chia mảng chỉ để hiển thị mặt cong, không phải đường cắt.
+
+
+### Khuôn hộp lục giác liền và đường viền hình học
+
+Có mẫu riêng **Hộp lục giác · khuôn cắt liền**, khác mẫu lăng trụ hình học: sáu mặt thân liền nhau, tai dán thân, hai nắp lục giác ở hai đầu và các tai phụ/tai gài gắn trực tiếp. Không dùng dải nối rời cho mẫu này. Đây là kiểu khuôn cơ bản, không sao chép toàn bộ thiết kế nhiều lớp trong ảnh tham chiếu. Chưa bù độ dày bìa, dung sai hoặc mô phỏng va chạm của tai; in giấy và ráp thử trước khi gia công.
+
+Ngoài CLIP, Worker phân tích các vùng màu liên thông, đường biên, bao lồi, góc và tính đối xứng để tìm mặt 6/8 cạnh. Bản hiện tại chỉ ưu tiên khuôn lục giác khi có ít nhất hai vùng phát hiện phù hợp và CLIP nhận diện họ hộp đủ mạnh. Không thay điểm CLIP bằng điểm hình học: kết quả ghi rõ dựa trên đường viền và vẽ viền cam để người dùng kiểm tra. Bóng đổ, hoa văn, nền hoặc ánh sáng có thể làm sai đường viền; không dùng đường viền này làm kích thước thật. Các nhóm khác tiếp tục dùng CLIP và bước xác nhận.

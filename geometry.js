@@ -1,6 +1,6 @@
 export const UNITS={mm:1,cm:10,m:1000,in:25.4};
 export function photoRatios(marks,reference,model){
- const required=['cylinder','cone','triangular-pyramid','polygon-prism','polygon-pyramid'].includes(model)?['w','h']:['w','d','h'];
+ const required=['cylinder','cone','triangular-pyramid','polygon-prism','polygon-pyramid','hex-carton'].includes(model)?['w','h']:['w','d','h'];
  if(!required.includes(reference))throw Error('Mẫu này dùng A (đường kính hoặc cạnh đáy) hoặc C (chiều cao) làm cạnh chuẩn.');
  const labels={w:'A',d:'B',h:'C'},lengths={};
  for(const k of required){const p=marks[k];if(!p||p.length!==2||!p.flat().every(Number.isFinite))continue;const n=Math.hypot(p[1][0]-p[0][0],p[1][1]-p[0][1]);if(n>=3)lengths[k]=n;}
@@ -16,7 +16,7 @@ export function geometry(model,w,d,h,tab,sides=6){
  const faces=[],circles=[];const poly=(name,p,glue=false)=>faces.push({name,p,glue});
  const rect=(name,x,y,a,b,g=false)=>poly(name,[[x,y],[x+a,y],[x+a,y+b],[x,y+b]],g);
  const sideTab=(name,x,y,t,l,right=false)=>{const s=right?1:-1;poly(name,[[x,y],[x+s*t,y+Math.min(t/3,l/4)],[x+s*t,y+l-Math.min(t/3,l/4)],[x,y+l]],true)};
- const t=Math.min(...(['cylinder','cone','triangular-pyramid','polygon-prism','polygon-pyramid'].includes(model)?[w,h]:[w,d,h]))*tab/100;
+ const t=Math.min(...(['cylinder','cone','triangular-pyramid','polygon-prism','polygon-pyramid','hex-carton'].includes(model)?[w,h]:[w,d,h]))*tab/100;
  if(model==='mailer'){
   rect('Mép nắp',0,0,w,h);rect('Nắp',0,h,w,d);rect('Lưng',0,h+d,w,h);rect('Đáy',0,d+2*h,w,d);rect('Mặt trước',0,2*d+2*h,w,h);
   rect('Hông trái',-h,d+2*h,h,d);rect('Hông phải',w,d+2*h,h,d);
@@ -29,6 +29,24 @@ export function geometry(model,w,d,h,tab,sides=6){
   rect('Tai trên',w,-d/2,d,d/2,true);rect('Tai trên',2*w+d,-d/2,d,d/2,true);
   rect('Tai dưới',w,h,d,d/2,true);rect('Tai dưới',2*w+d,h,d,d/2,true);
   rect('Mép nắp',0,-d-t,w,t,true);rect('Mép đáy',0,h+d,w,t,true);
+ }else if(model==='hex-carton'){
+  const root3=Math.sqrt(3),flap=Math.min(w*.42,h*.7),tuck=Math.min(w*.3,h*.75);
+  for(let i=0;i<6;i++)rect('Thân '+(i+1),i*w,0,w,h);
+  sideTab('Tai dán thân',0,0,Math.min(t,w*.3),h);
+  const cap=(panel,top)=>{
+   const origin=panel*w,baseY=top?0:h,s=top?-1:1;
+   const p=[[origin,baseY],[origin+w,baseY],[origin+1.5*w,baseY+s*root3*w/2],[origin+w,baseY+s*root3*w],[origin,baseY+s*root3*w],[origin-.5*w,baseY+s*root3*w/2]];
+   poly(top?'Nắp lục giác':'Đáy lục giác',p);
+   const far=baseY+s*root3*w;
+   poly(top?'Tai gài nắp':'Tai gài đáy',[[origin,far],[origin+w,far],[origin+.88*w,far+s*tuck],[origin+.12*w,far+s*tuck]],true);
+   for(let i=0;i<6;i++){
+    if(i===panel)continue;const x=i*w;
+    if(i===panel-1)poly('Tai phụ '+(top?'trên ':'dưới ')+(i+1),[[x,baseY],[x+w,baseY],[x,baseY+s*flap]],true);
+    else if(i===panel+1)poly('Tai phụ '+(top?'trên ':'dưới ')+(i+1),[[x,baseY],[x+w,baseY],[x+w,baseY+s*flap]],true);
+    else poly('Tai phụ '+(top?'trên ':'dưới ')+(i+1),[[x,baseY],[x+w,baseY],[x+.88*w,baseY+s*flap],[x+.12*w,baseY+s*flap]],true);
+   }
+  };
+  cap(1,true);cap(4,false);
  }else if(model==='polygon-prism'||model==='polygon-pyramid'){
   if(!Number.isInteger(sides)||sides<3||sides>12)throw Error('Số cạnh đáy phải là số nguyên từ 3 đến 12.');
   const n=sides,R=w/(2*Math.sin(Math.PI/n)),apothem=w/(2*Math.tan(Math.PI/n));

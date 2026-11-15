@@ -1,4 +1,5 @@
-import {CANDIDATES,rankRecognition} from './recognition.js?v=20261115-solids';
+import {detectPolygonFaces,combineGeometryAndRecognition} from './contours.js?v=20261115-hex-carton';
+import {CANDIDATES,rankRecognition} from './recognition.js?v=20261115-hex-carton';
 let classifierPromise;
 async function classifier(){
  if(!classifierPromise)classifierPromise=(async()=>{
@@ -19,7 +20,7 @@ self.onmessage=async({data})=>{
  if(data.type!=='analyze'||busy)return;busy=true;
  try{const model=await classifier();self.postMessage({type:'status',message:'Đang so khớp hình ảnh với các nhóm cấu trúc…'});
   const output=await model(data.image,CANDIDATES.map(c=>c.prompt));
-  self.postMessage({type:'result',result:rankRecognition(output),requestId:data.requestId});
+  self.postMessage({type:'result',result:combineGeometryAndRecognition(rankRecognition(output),data.geometryPixels?detectPolygonFaces(data.geometryPixels):[]),requestId:data.requestId});
  }catch(e){self.postMessage({type:'error',message:e.message||'Không chạy được mô hình AI.',requestId:data.requestId});}
  finally{busy=false;}
 };
