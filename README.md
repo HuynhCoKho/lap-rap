@@ -34,3 +34,15 @@ Tải ảnh → (tùy chọn) khoanh hai góc vùng vật thể → Nhận dạn
 - Dừng nhận dạng sẽ hủy Worker. Có thể thử lại khi lỗi tải mạng, WASM hoặc hết bộ nhớ. Sau 10 phút không có kết quả, ứng dụng ngừng chờ và cho thử lại; không đưa ra kết quả nhận dạng giả.
 
 Tài liệu: https://huggingface.co/docs/transformers.js/api/pipelines
+
+
+### Khối tam giác và chống chọn nhầm mặc định
+
+Có thêm lăng trụ tam giác cân (A: đáy tam giác; B: cao tam giác; C: dài lăng trụ) và chóp tam giác đều (A: cạnh đáy; C: cao vuông góc; B không dùng). Đây là hình học lý tưởng, không tự khôi phục vật gói lá cong/méo hoặc tam giác lệch bất kỳ. Mẫu có dải nối rời với đường gấp giữa; chưa bù độ dày.
+
+Ảnh mới phải được xác nhận kiểu khối trước khi hiện bản trải và xuất tệp. Có thể xác nhận gợi ý AI hoặc chọn kiểu thủ công. Điểm đầu dưới 65% hoặc chênh hai nhóm đầu dưới 20 điểm phần trăm sẽ để lựa chọn trống và khóa nút dùng gợi ý đến khi người dùng chọn lại. Các ngưỡng này chỉ là quy tắc giao diện; điểm so khớp không phải xác suất chính xác. Có nhóm ảnh chụp màn hình: dùng ảnh gốc hoặc khoanh sát vật thể; khung giao diện có thể khiến AI đoán thành hộp.
+
+
+### Đa giác đều 3–12 cạnh
+
+Lăng trụ và chóp có đáy đa giác đều 3–12 cạnh. Chọn số cạnh ở ô Số cạnh đáy; A là một cạnh đa giác (không phải đường kính), C là chiều cao vuông góc, B không dùng. AI có nhóm gợi ý ngũ giác/lục giác/bát giác và chóp đáy vuông; các số cạnh còn lại có thể chọn thủ công. Chưa hỗ trợ tự suy đa giác không đều hoặc mặt cong bất kỳ. Không xem việc thêm nhóm phân loại là bảo đảm độ chính xác: cần ảnh gốc/khoanh vùng và xác nhận kết quả.

@@ -1,7 +1,7 @@
 export const UNITS={mm:1,cm:10,m:1000,in:25.4};
 export function photoRatios(marks,reference,model){
- const required=['cylinder','cone'].includes(model)?['w','h']:['w','d','h'];
- if(!required.includes(reference))throw Error('Hình trụ/nón dùng A (đường kính) hoặc C (chiều cao) làm cạnh chuẩn.');
+ const required=['cylinder','cone','triangular-pyramid','polygon-prism','polygon-pyramid'].includes(model)?['w','h']:['w','d','h'];
+ if(!required.includes(reference))throw Error('Mẫu này dùng A (đường kính hoặc cạnh đáy) hoặc C (chiều cao) làm cạnh chuẩn.');
  const labels={w:'A',d:'B',h:'C'},lengths={};
  for(const k of required){const p=marks[k];if(!p||p.length!==2||!p.flat().every(Number.isFinite))continue;const n=Math.hypot(p[1][0]-p[0][0],p[1][1]-p[0][1]);if(n>=3)lengths[k]=n;}
  const missing=required.filter(k=>!lengths[k]);
@@ -12,11 +12,11 @@ export function dimensions(base,reference,ratios){
  if(!Number.isFinite(base)||base<=0)throw Error('Cạnh chuẩn phải lớn hơn 0.');
  const result={};for(const k of ['w','d','h']){const r=k===reference?100:ratios[k];if(!Number.isFinite(r)||r<=0||r>1000)throw Error('Tỷ lệ phải lớn hơn 0 và không quá 1000%.');result[k]=base*r/100;}return result;
 }
-export function geometry(model,w,d,h,tab){
+export function geometry(model,w,d,h,tab,sides=6){
  const faces=[],circles=[];const poly=(name,p,glue=false)=>faces.push({name,p,glue});
  const rect=(name,x,y,a,b,g=false)=>poly(name,[[x,y],[x+a,y],[x+a,y+b],[x,y+b]],g);
  const sideTab=(name,x,y,t,l,right=false)=>{const s=right?1:-1;poly(name,[[x,y],[x+s*t,y+Math.min(t/3,l/4)],[x+s*t,y+l-Math.min(t/3,l/4)],[x,y+l]],true)};
- const t=Math.min(w,d,h)*tab/100;
+ const t=Math.min(...(['cylinder','cone','triangular-pyramid','polygon-prism','polygon-pyramid'].includes(model)?[w,h]:[w,d,h]))*tab/100;
  if(model==='mailer'){
   rect('Mép nắp',0,0,w,h);rect('Nắp',0,h,w,d);rect('Lưng',0,h+d,w,h);rect('Đáy',0,d+2*h,w,d);rect('Mặt trước',0,2*d+2*h,w,h);
   rect('Hông trái',-h,d+2*h,h,d);rect('Hông phải',w,d+2*h,h,d);
@@ -29,6 +29,40 @@ export function geometry(model,w,d,h,tab){
   rect('Tai trên',w,-d/2,d,d/2,true);rect('Tai trên',2*w+d,-d/2,d,d/2,true);
   rect('Tai dưới',w,h,d,d/2,true);rect('Tai dưới',2*w+d,h,d,d/2,true);
   rect('Mép nắp',0,-d-t,w,t,true);rect('Mép đáy',0,h+d,w,t,true);
+ }else if(model==='polygon-prism'||model==='polygon-pyramid'){
+  if(!Number.isInteger(sides)||sides<3||sides>12)throw Error('Số cạnh đáy phải là số nguyên từ 3 đến 12.');
+  const n=sides,R=w/(2*Math.sin(Math.PI/n)),apothem=w/(2*Math.tan(Math.PI/n));
+  const regular=()=>{const p=[[0,0]];let x=0,y=0;for(let i=0;i<n-1;i++){x+=w*Math.cos(2*Math.PI*i/n);y+=w*Math.sin(2*Math.PI*i/n);p.push([x,y]);}return p;};
+  if(model==='polygon-prism'){
+   for(let i=0;i<n;i++)rect('Mặt bên '+(i+1),i*w,0,w,h);
+   const p=regular();poly('Đáy '+n+' cạnh 1',p.map(([x,y])=>[x,-y]));poly('Đáy '+n+' cạnh 2',p.map(([x,y])=>[x,h+y]));
+   sideTab('Tai nối thân',0,0,t,h);
+   const bottom=Math.max(...faces.flatMap(f=>f.p.map(p=>p[1])));
+   for(let i=0;i<2*(n-1);i++)rect('Dải nối đáy '+(i+1),i*2.5*t,bottom+2*t,2*t,w,true);
+  }else{
+   const base=regular(),slant=Math.hypot(h,apothem);poly('Đáy đều '+n+' cạnh',base);
+   for(let i=0;i<n;i++){const a=base[i],b=base[(i+1)%n],dx=b[0]-a[0],dy=b[1]-a[1];poly('Mặt tam giác '+(i+1),[a,b,[(a[0]+b[0])/2+dy/w*slant,(a[1]+b[1])/2-dx/w*slant]]);}
+   const bottom=Math.max(...faces.flatMap(f=>f.p.map(p=>p[1])));
+   for(let i=0;i<n;i++)rect('Dải nối cạnh '+(i+1),i*2.5*t,bottom+2*t,2*t,Math.hypot(h,R),true);
+  }
+ }else if(model==='triangular-prism'){
+  const side=Math.hypot(w/2,d);
+  rect('Mặt bên 1',0,0,w,h);rect('Mặt bên 2',w,0,side,h);rect('Mặt bên 3',w+side,0,side,h);
+  poly('Đáy tam giác 1',[[0,0],[w/2,-d],[w,0]]);
+  poly('Đáy tam giác 2',[[0,h],[w,h],[w/2,h+d]]);
+  sideTab('Tai nối thân',0,0,t,h);
+  // Separate strips join the four remaining base edges without overlapping the faces.
+  for(let i=0;i<4;i++)rect('Dải nối đáy '+(i+1),i*(2*t+t/2),h+d+2*t,2*t,side,true);
+ }else if(model==='triangular-pyramid'){
+  const altitude=Math.sqrt(3)*w/2,slant=Math.hypot(h,w*Math.sqrt(3)/6);
+  const base=[[0,0],[w,0],[w/2,altitude]];poly('Đáy tam giác đều',base);
+  for(let i=0;i<3;i++){
+   const a=base[i],b=base[(i+1)%3],dx=b[0]-a[0],dy=b[1]-a[1];
+   poly('Mặt bên '+(i+1),[a,b,[(a[0]+b[0])/2+dy/w*slant,(a[1]+b[1])/2-dx/w*slant]]);
+  }
+  const edge=Math.hypot(h,w/Math.sqrt(3));
+  const bottom=Math.max(...faces.flatMap(f=>f.p.map(p=>p[1])));
+  for(let i=0;i<3;i++)rect('Dải nối cạnh '+(i+1),i*(2*t+t/2),bottom+2*t,2*t,edge,true);
  }else if(model==='dustpan'){
   // Open tray approximation: A = opening width, B = bottom depth, C = rear wall height.
   rect('Đáy khay',0,0,w,d);rect('Vách sau',0,-h,w,h);
@@ -49,6 +83,7 @@ export function geometry(model,w,d,h,tab){
  const edgeMap=new Map();const key=p=>p.map(n=>n.toFixed(6)).join(',');
  for(const f of faces){for(let i=0;i<f.p.length;i++){const a=f.p[i],b=f.p[(i+1)%f.p.length],k=[key(a),key(b)].sort().join('|');if(edgeMap.has(k))edgeMap.get(k).count++;else edgeMap.set(k,{a,b,count:1});}}
  if(model==='dustpan'){for(const x of [-h+t,w+h-t])edgeMap.set('strip-fold-'+x,{a:[x,-h-3*t],b:[x,-3*t],count:2});}
+ if(['triangular-prism','triangular-pyramid','polygon-prism','polygon-pyramid'].includes(model))for(const f of faces.filter(f=>f.glue&&f.name.startsWith('Dải nối'))){const x=(f.p[0][0]+f.p[1][0])/2;edgeMap.set(f.name,{a:[x,f.p[0][1]],b:[x,f.p[2][1]],count:2});}
  const pts=faces.flatMap(f=>f.p).concat(circles.flatMap(c=>[[c.cx-c.r,c.cy-c.r],[c.cx+c.r,c.cy+c.r]]));
  const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);return {faces,circles,edges:[...edgeMap.values()],bounds:{x:Math.min(...xs),y:Math.min(...ys),w:Math.max(...xs)-Math.min(...xs),h:Math.max(...ys)-Math.min(...ys)}};
 }

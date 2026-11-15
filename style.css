@@ -11,3 +11,5 @@ header{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:1
 .ai-panel{background:#eff7f1;border:1px solid #c6dfce;border-radius:12px;padding:14px;margin-top:14px}.ai-panel>button{width:100%;margin-top:10px}.ai-panel #aiStatus{font-size:11px;line-height:1.8;overflow-wrap:anywhere}.ai-panel progress{width:100%;accent-color:#25704e}.ai-panel .eyebrow{font-size:9px;letter-spacing:1.5px}.crop-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}.crop-tools button{font-size:10px}.crop-tools span{flex-basis:100%}button:disabled{opacity:.45;cursor:not-allowed}.ai-panel select{font-size:11px}#aiDetails{white-space:pre-line}
 
 .upload-hint{display:block;font-size:11px;line-height:1.8;margin-top:10px;color:#4e7560}.upload.drag-over{border-color:#24724e;background:#dcefe2;outline:3px solid #a6cfb5;outline-offset:3px}.upload:focus-visible{outline:3px solid #c4a45a;outline-offset:3px}
+
+[hidden]{display:none!important}

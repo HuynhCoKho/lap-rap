@@ -1,4 +1,4 @@
-import {CANDIDATES,rankRecognition} from './recognition.js';
+import {CANDIDATES,rankRecognition} from './recognition.js?v=20261115-solids';
 let classifierPromise;
 async function classifier(){
  if(!classifierPromise)classifierPromise=(async()=>{
